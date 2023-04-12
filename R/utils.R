@@ -133,7 +133,7 @@ generate_clusters <- function(baseprob_list, clusters, Rho, trial=-1) {
                                 prefix = "q",
                                 corMatrix = Rho)
     
-
+    
     data <- data[,-1] # drop id
     colnames(data) <- colnames(Rho)
     
@@ -145,11 +145,39 @@ generate_clusters <- function(baseprob_list, clusters, Rho, trial=-1) {
     
     # Convert to integer matrix
     data <- matrix(as.integer(as.matrix(data)), nrow = n)
-
+    
     # Reset names
     colnames(data) <- names
-
+    
     data
   })
   do.call(rbind, data_clusters)
 }
+
+create_confusion_matrix <- function(predicted_clusters, true_clusters) {
+  # function that takes in a vector predicted clusters and true clusters
+  # returns the confusion matrix that maximizes correct classification
+  
+  predicted_clusters <- as.numeric(predicted_clusters)
+  true_clusters <- as.numeric(true_clusters)
+  N <- max(max(predicted_clusters), max(true_clusters))
+  
+  # create an empty matrix to store the counts
+  count_matrix <- matrix(0, nrow = N, ncol = N)
+  
+  # fill the matrix with the frequency of each pair of true and predicted clusters
+  for (i in 1:length(predicted_clusters)) {
+    count_matrix[true_clusters[i], predicted_clusters[i]] <- count_matrix[true_clusters[i], predicted_clusters[i]] + 1
+  }
+  
+  # perform optimal assignment using the Hungarian algorithm
+  assignment <- solve_LSAP(count_matrix, maximum = TRUE)
+  
+  # create a confusion matrix using the optimal assignment
+  confusion_matrix <- count_matrix[assignment,]
+  rownames(confusion_matrix) <- 1:N
+  colnames(confusion_matrix) <- 1:N
+  
+  return(confusion_matrix)
+}
+
