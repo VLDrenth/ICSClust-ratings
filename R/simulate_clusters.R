@@ -106,4 +106,7 @@ table(ICS_out$clusters, clusters)
 component_plot(ICS_out$ICS_out, select = ICS_out$select,
                clusters = as.factor(ICS_out$clusters))
 
+# Clustering k-means on the raw data
+km <- kmeans(results_1, centers = 2)
+table(km$cluster, clusters)
 
