@@ -91,7 +91,7 @@ get_distribution <- function(type, K = 5)
 } # FUN
 
 
-get_baseprobs <- function(construct_size, num_clusters, probability_types,
+get_baseprobs <- function(construct_size, nb_clusters, probability_types,
                           num_likert) {
   # gets the baseprobs for all clusters in one matrix
   # probability_types: list containing for each cluster a vector of probability
@@ -99,7 +99,7 @@ get_baseprobs <- function(construct_size, num_clusters, probability_types,
   # Returns a list of baseprobs matrixes, one for each cluster
   
   # list containing for each cluster, a matrix of marginal probabilities
-  baseprobs_list <- lapply(seq_len(num_clusters), function(cluster) {
+  baseprobs_list <- lapply(seq_len(nb_clusters), function(cluster) {
     
     cluster_prob_types <- probability_types[[cluster]]
     
@@ -121,10 +121,10 @@ get_baseprobs <- function(construct_size, num_clusters, probability_types,
   baseprobs_list
 }
 
-simulate_clusters <- function(baseprob_list, clusters, Rho, trial=-1) {
-  num_clusters <- length(baseprob_list)
+generate_clusters <- function(baseprob_list, clusters, Rho, trial=-1) {
+  nb_clusters <- length(unique(clusters))
   
-  data_clusters <- lapply(seq_len(num_clusters), function(cluster) {
+  data_clusters <- lapply(seq_len(nb_clusters), function(cluster) {
     baseprobs <- baseprob_list[[cluster]]
     n <- sum(clusters == cluster)
     temp <- simstudy::genData(n)
@@ -148,7 +148,6 @@ simulate_clusters <- function(baseprob_list, clusters, Rho, trial=-1) {
 
     # Reset names
     colnames(data) <- names
-    
 
     data
   })
