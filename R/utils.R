@@ -174,7 +174,7 @@ create_confusion_matrix <- function(predicted_clusters, true_clusters) {
   assignment <- solve_LSAP(count_matrix, maximum = TRUE)
   
   # create a confusion matrix using the optimal assignment
-  confusion_matrix <- count_matrix[assignment,]
+  confusion_matrix <- t(count_matrix[assignment,])
   rownames(confusion_matrix) <- 1:N
   colnames(confusion_matrix) <- 1:N
   

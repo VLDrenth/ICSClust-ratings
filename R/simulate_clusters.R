@@ -110,6 +110,7 @@ ICS_out <- ICSClust(results_1, nb_select = nb_clusters - 1,
                     method = 'kmeans_clust', criterion = 'med_crit')
 
 table(ICS_out$clusters, clusters)
+create_confusion_matrix(ICS_out$clusters, clusters)
 
 component_plot(ICS_out$ICS_out, select = ICS_out$select,
                clusters = as.factor(ICS_out$clusters))
@@ -118,4 +119,4 @@ component_plot(ICS_out$ICS_out, select = ICS_out$select,
 km <- kmeans(results_1, centers = nb_clusters)
 
 table(km$cluster, clusters)
-
+create_confusion_matrix(km$cluster, clusters)
