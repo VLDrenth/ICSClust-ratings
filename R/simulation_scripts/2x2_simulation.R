@@ -24,25 +24,26 @@ n <- c(1000)
 n_max <- max(n)
 
 # sizes of construct 
-construct_size <- 5
+construct_size <- 6
 
 # number of constructs
-num_constructs <- 3
+num_constructs <- 2
 
 # correlation between items in the same construct
 within_corr <- 0.7
 
 # list containing for each cluster a list of probability types
 # (1 per construct)
-probability_types <- list(cluster1 = list("centered", "agree", "agree"),
-                          cluster2 = list( "centered","disagree", "agree"),
-                          cluster3 = list("centered", "agree", "disagree"))
+probability_types <- list(cluster1 = list("agree", "agree"),
+                          cluster2 = list( "disagree","disagree"),
+                          cluster3 = list("agree", "disagree"),
+                          cluster4 = list("disagree", "agree"))
 
 # number of clusters
 nb_clusters <- length(probability_types)
 
 # probability of belonging to particular cluster
-cluster_probs <- list(c(0.1, 0.7, 0.2))
+cluster_probs <- list(c(0.1, 0.1, 0.1, 0.7))
 
 # number of categories per item (K))
 num_likert <- 7

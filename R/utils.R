@@ -139,7 +139,7 @@ generate_clusters <- function(baseprob_list, clusters, Rho, trial=-1) {
     
     # add identifying variables
     data$trial <- trial
-    data$cluster <- cluster
+    data$true_cluster <- cluster
     
     names <- colnames(data)
     
@@ -180,4 +180,34 @@ create_confusion_matrix <- function(predicted_clusters, true_clusters) {
   
   return(confusion_matrix)
 }
+
+# From ICSClust package
+# https://github.com/AuroreAA/ICSClust
+# TODO: Remove when function is exported
+# Object is the ICS data, clusters are all the IC's, select are the IC's selected
+eta2_power <- function(object, clusters, select){
+  if(is.null(clusters)){
+    warning("The 'clusters' argument is mandatory to compute the discriminatory 
+            power of the reduced data frame.")
+  }else{
+    df <- data.frame(clusters = as.factor(clusters), object[, select])
+    
+    # Univariate case: ANOVA
+    if(length(select) == 1){
+      
+      ICS_mod <- lm(as.formula(paste("cbind(", colnames(df)[-1], ") ~ clusters")),
+                    data = df)
+      heplots::etasq(ICS_mod)[1,1]
+      
+    }else{
+      # Multivariate case: MANOVO with Wilks test
+      
+      ICS_mod <- manova(as.formula(paste("cbind(", 
+                                         paste(colnames(df)[-1], collapse = ","), 
+                                         ") ~ clusters")), data = df)
+      heplots::etasq(ICS_mod, test = "Wilks")[1,1]
+    }
+  }
+}
+
 
