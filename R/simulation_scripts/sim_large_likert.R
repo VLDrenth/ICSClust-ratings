@@ -17,28 +17,26 @@ source("R/utils.R")
 seed <- 42                    
 
 # number of simulation runs
-B <- 100
+B <- 30
 
 # sample sizes
 n <- c(1000)
 n_max <- max(n)
 
 # sizes of construct 
-construct_size <- 5
+construct_size <- 10
 
 # number of constructs
-num_constructs <- 3
+num_constructs <- 2
 
 # correlation between items in the same construct
-within_corr <- 0.7
+within_corr <- 0.8
 
-# list containing for each cluster a list of probability types
-# (1 per construct)
-probability_types <- list(
-  cluster1 = list("centered", "agree", "agree"),
-  cluster2 = list( "centered","disagree", "agree")
+probability_types <- list(cluster1 = append(list("agree"),
+                                            rep("centered", num_constructs - 1)),
+                          cluster2 = append(list("disagree"),
+                                            rep("centered", num_constructs - 1))
 )
-
 # number of clusters
 nb_clusters <- length(probability_types)
 
@@ -46,18 +44,21 @@ nb_clusters <- length(probability_types)
 cluster_probs <- list(c(0.5, 0.5))
 
 # number of categories per item (K))
-num_likert <- 7
+num_likert <- 101
 
 # Types of second scatter matrix
-scatter_list <- list("cov4" = ICS_cov4,
-                     "tcov" = ICS_tcov,
-                     "lcov" = ICS_lcov)
+scatter_list <- list(
+  `COV-COV4` = list(S1 = ICS_cov, S2 = ICS_cov4),
+  `LCOV-COV` = list(S1 = ICS_lcov, S2 = ICS_cov,
+                    S1_args = list(mscatter = "cov", proportion = 0.1)),
+  `TCOV-COV` = list(S1 = ICS_tcov, S2 = ICS_cov,
+                    S1_args = list(beta = 2)))
 
 # define the correlation matrix of the class populations
 Rho <- get_blockmatrix(construct_size = construct_size,
                        num_constructs = num_constructs,
                        within_correlation = rep(within_corr, num_constructs),
-                       between_correlation = 0.2)
+                       between_correlation = 0)
 
 set.seed(seed)
 
@@ -65,7 +66,7 @@ set.seed(seed)
 results_probs <- lapply(cluster_probs, function (cluster_prob) { 
   
   results_scatter <- lapply(seq_len(length(scatter_list)), function (i) {
-    scatter <- scatter_list[[i]]
+    scatter_pair <- scatter_list[[i]]
     scatter_name <- names(scatter_list)[i]
     
     print(paste("Trial with", scatter_name, "and probabilities of",
@@ -101,13 +102,18 @@ results_probs <- lapply(cluster_probs, function (cluster_prob) {
       data <- full_data[, seq_len(num_constructs * construct_size)]
       
       # Perform ICS
-      ICS_out <- ICSClust(data, nb_select = 2,
+      ICS_out <- ICSClust(data,
+                          nb_select = nb_clusters - 1,
                           nb_clusters = nb_clusters,
-                          method = 'kmeans_clust', criterion = 'med_crit',
-                          ICS_args = list(S1 = scatter, S2 = ICS_cov))
+                          method = 'kmeans_clust',
+                          criterion = 'med_crit',
+                          ICS_args = scatter_pair,
+                          clustering_args = list(iter.max = 100, nstart = 20)
+      )
       
       # Compute eta squared
-      eta2 <- eta2_power(object = ICS::components(ICS_out$ICS_out), clusters = clusters,
+      eta2 <- eta2_power(object = ICS::components(ICS_out$ICS_out),
+                         clusters = clusters,
                          select = ICS_out$select)
       
       # Compute adjusted Rand Index
@@ -135,7 +141,7 @@ df_res %>% group_by(scatter) %>%
 
 # Take only results from trial 1 to make plots
 results_1 <- df_res %>%
-  filter(trial == 1, scatter == "cov4") %>%
+  filter(trial == 1, scatter == "LCOV") %>%
   dplyr::select(-c(trial))
 
 # get true clusters from data

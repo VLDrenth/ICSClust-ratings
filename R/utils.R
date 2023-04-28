@@ -32,7 +32,6 @@ get_blockmatrix <- function(construct_size,
 # K is number of answer categories
 get_distribution <- function(type, K = 5)
 {
-  stopifnot(K %in% c(3, 5, 7, 9))
   pi <- numeric()
   
   if(identical(type, "centered"))
@@ -46,9 +45,19 @@ get_distribution <- function(type, K = 5)
     } else if(identical(K, 7))
     {
       pi <- c(0.05, 0.125, 0.2, 0.25, 0.2, 0.125, 0.05)
-    } else{
+    } else if(identical(K, 9)) {
       pi <- c(0.025, 0.05, 0.15, 0.175, 0.2, 0.175, 0.15, 0.05, 0.025)
-    } # IF centered
+    } else {
+      distances <- seq_len(K) - median(seq_len(K))
+      
+      pi <- rep(0, K)
+      for (j in seq_len(K)) {
+        
+        pi[j] <- dnorm(distances[j], sd = 2)
+      }
+    }
+    pi <- pi / sum(pi)
+    # IF centered
     
   } else if(identical(type, "agree"))
   {
@@ -61,9 +70,11 @@ get_distribution <- function(type, K = 5)
     } else if(identical(K, 7))
     {
       pi <- c(0.05, 0.075, 0.1, 0.125, 0.15, 0.225, 0.275)
-    } else{
+    } else if(identical(K, 9)) {
       pi <- c(0.025, 0.05, 0.075, 0.075, 0.1, 0.125, 0.15, 0.175, 0.225)
-    } # IF agree
+    } else {
+      pi <- seq(1, K) / sum(seq(1, K))
+    }# IF agree
     
   } else if(identical(type, "polarized"))
   {
@@ -209,5 +220,21 @@ eta2_power <- function(object, clusters, select){
     }
   }
 }
+
+bin_values <- function(x) {
+  
+  # Define the bin ranges
+  bin_ranges <- c(-Inf, seq(from = -3, to = 13, by = 1), Inf)
+  
+  # Find which bin the value belongs to
+  bin <- findInterval(x, bin_ranges)
+  
+  # Map the bin index to a value 
+  mapped_value <- bin
+  
+  # Return the mapped value
+  return(mapped_value)
+}
+
 
 
